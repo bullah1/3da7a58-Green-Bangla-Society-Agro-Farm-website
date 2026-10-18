@@ -14,6 +14,87 @@ export type Database = {
   }
   public: {
     Tables: {
+      applications: {
+        Row: {
+          address: string | null
+          admin_note: string | null
+          amount: string | null
+          created_at: string
+          email: string | null
+          id: string
+          message: string | null
+          name: string
+          phone: string
+          service: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          admin_note?: string | null
+          amount?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          name: string
+          phone: string
+          service: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          admin_note?: string | null
+          amount?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          message?: string | null
+          name?: string
+          phone?: string
+          service?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      schemes: {
+        Row: {
+          active: boolean
+          created_at: string
+          id: string
+          kind: string
+          min_amount: number
+          rate: number
+          sort_order: number
+          updated_at: string
+          years: number
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind: string
+          min_amount?: number
+          rate: number
+          sort_order?: number
+          updated_at?: string
+          years: number
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          id?: string
+          kind?: string
+          min_amount?: number
+          rate?: number
+          sort_order?: number
+          updated_at?: string
+          years?: number
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           available: boolean

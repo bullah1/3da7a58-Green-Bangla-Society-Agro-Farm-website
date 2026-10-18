@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { site, waLink } from "@/lib/site";
 import { tx, useLang } from "@/lib/i18n";
+import { submitApplication } from "@/lib/applications";
 
 const field =
   "mt-1 w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-green-dark focus:ring-2 focus:ring-ring/25";
@@ -31,7 +32,8 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
     amount: "",
     message: "",
   });
-  const [sent, setSent] = useState(false);
+  const [save, setSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [savedFor, setSavedFor] = useState<string | null>(null);
 
   const set = (key: keyof typeof form) => (e: { target: { value: string } }) =>
     setForm((f) => ({ ...f, [key]: e.target.value }));
@@ -50,6 +52,20 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
     .join("\n");
 
   const ready = form.name.trim().length > 1 && form.phone.trim().length > 5;
+
+  // Store the application once per distinct content, whichever button is used.
+  async function record() {
+    if (savedFor === summary || save === "saving") return;
+    setSave("saving");
+    try {
+      await submitApplication(form);
+      setSavedFor(summary);
+      setSave("saved");
+    } catch (err) {
+      console.error(err);
+      setSave("error");
+    }
+  }
 
   const mailHref = `mailto:${site.email}?subject=${encodeURIComponent(
     `Application: ${form.service}`,
@@ -113,7 +129,7 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
             // Open WhatsApp first (popup blockers allow it during the click), then the mail app.
             window.open(waLink(summary), "_blank", "noopener,noreferrer");
             window.location.href = mailHref;
-            setSent(true);
+            void record();
           }}
           className={`inline-flex items-center justify-center rounded-lg px-5 py-3 text-sm font-bold transition-colors ${
             ready
@@ -125,6 +141,7 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
         </button>
         <a
           href={ready ? waLink(summary) : undefined}
+          onClick={() => ready && void record()}
           target="_blank"
           rel="noreferrer"
           aria-disabled={!ready}
@@ -138,6 +155,7 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
         </a>
         <a
           href={ready ? mailHref : undefined}
+          onClick={() => ready && void record()}
           aria-disabled={!ready}
           className={`inline-flex items-center justify-center rounded-lg border px-5 py-3 text-sm font-bold transition-colors ${
             ready
@@ -157,15 +175,31 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
           )}
         </p>
       )}
-      {ready && sent && (
-        <p className="mt-3 text-xs font-semibold text-green-dark">
-          {tx(
-            lang,
-            "Your application was sent to both WhatsApp and email. If the email window did not open, use “Email only”.",
-            "আপনার আবেদনটি হোয়াটসঅ্যাপ এবং ইমেইল উভয় মাধ্যমেই পাঠানো হয়েছে। যদি ইমেইল উইন্ডোটি না খোলে, তবে “শুধুমাত্র ইমেইল” ব্যবহার করুন।",
-          )}
-        </p>
-      )}
+      <p className="mt-3 text-xs font-semibold" role="status" aria-live="polite">
+        {save === "saving" && (
+          <span className="text-muted-foreground">
+            {tx(lang, "Saving your application…", "আপনার আবেদন জমা হচ্ছে…")}
+          </span>
+        )}
+        {save === "saved" && (
+          <span className="text-green-dark">
+            {tx(
+              lang,
+              "Application received. Our team will contact you on the mobile number you gave. Please also send the WhatsApp message that opened.",
+              "আবেদন জমা হয়েছে। আমাদের টিম আপনার দেওয়া মোবাইল নম্বরে যোগাযোগ করবে। খুলে যাওয়া হোয়াটসঅ্যাপ মেসেজটিও পাঠিয়ে দিন।",
+            )}
+          </span>
+        )}
+        {save === "error" && (
+          <span className="text-red-dark">
+            {tx(
+              lang,
+              "We couldn't save the application online. Please send it on WhatsApp or email so it reaches us.",
+              "অনলাইনে আবেদন সংরক্ষণ করা যায়নি। আবেদনটি যেন আমাদের কাছে পৌঁছায়, তাই হোয়াটসঅ্যাপ বা ইমেইলে পাঠিয়ে দিন।",
+            )}
+          </span>
+        )}
+      </p>
     </form>
   );
 }

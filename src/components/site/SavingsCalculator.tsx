@@ -1,4 +1,6 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { fmtRate, fmtYears, schemesOf, schemesQuery } from "@/lib/schemes";
 import { bdt, waLink } from "@/lib/site";
 import { tx, useLang } from "@/lib/i18n";
 
@@ -13,6 +15,20 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
   const [amount, setAmount] = useState(mode === "dps" ? 2000 : 100000);
   const [years, setYears] = useState(5);
   const [rate, setRate] = useState(mode === "dps" ? 9 : 10);
+  const [touched, setTouched] = useState(false);
+  const { data: schemeList } = useQuery(schemesQuery);
+  const options = schemesOf(schemeList, mode);
+  const rateMax = Math.max(15, ...options.map((o) => Math.ceil(o.rate)));
+
+  // Start from the published rate for the chosen term until the visitor changes it.
+  useEffect(() => {
+    if (touched || options.length === 0) return;
+    const match = options.find((o) => o.years === years) ?? options[0]!;
+    setYears(match.years);
+    setRate(match.rate);
+    if (amount < match.min_amount) setAmount(match.min_amount);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [schemeList, mode]);
 
   const result = useMemo(() => {
     const months = years * 12;
@@ -28,6 +44,7 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
 
   function switchMode(next: Mode) {
     setMode(next);
+    setTouched(false);
     setAmount(next === "dps" ? 2000 : 100000);
     setRate(next === "dps" ? 9 : 10);
   }
@@ -52,6 +69,39 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
           ))}
         </div>
 
+        {options.length > 0 && (
+          <div className="mt-5">
+            <p className="text-xs font-semibold text-muted-foreground">
+              {tx(lang, "Our current terms", "আমাদের বর্তমান মেয়াদ")}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {options.map((o) => {
+                const on = o.years === years && o.rate === rate;
+                return (
+                  <button
+                    key={o.id}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => {
+                      setTouched(true);
+                      setYears(o.years);
+                      setRate(o.rate);
+                      if (amount < o.min_amount) setAmount(o.min_amount);
+                    }}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-bold transition-colors ${
+                      on
+                        ? "border-green-dark bg-green-dark text-white"
+                        : "border-border bg-card text-green-deep hover:bg-secondary"
+                    }`}
+                  >
+                    {fmtYears(o.years, lang)} — {fmtRate(o.rate, lang)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           <label className="block text-sm font-semibold text-green-deep">
             {mode === "dps"
@@ -62,7 +112,7 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
               min={100}
               step={100}
               value={amount}
-              onChange={(e) => setAmount(Number(e.target.value) || 0)}
+              onChange={(e) => setAmount(Math.max(0, Number(e.target.value) || 0))}
               className={field}
             />
           </label>
@@ -71,9 +121,12 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
             <input
               type="number"
               min={1}
-              max={20}
+              max={30}
               value={years}
-              onChange={(e) => setYears(Number(e.target.value) || 1)}
+              onChange={(e) => {
+                setTouched(true);
+                setYears(Math.min(30, Math.max(1, Number(e.target.value) || 1)));
+              }}
               className={field}
             />
           </label>
@@ -81,11 +134,14 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
             {tx(lang, "Expected annual profit rate", "প্রত্যাশিত বার্ষিক মুনাফার হার")}: {rate}%
             <input
               type="range"
-              min={4}
-              max={15}
-              step={0.5}
+              min={Math.min(4, ...options.map((o) => Math.floor(o.rate)))}
+              max={rateMax}
+              step={0.25}
               value={rate}
-              onChange={(e) => setRate(Number(e.target.value))}
+              onChange={(e) => {
+                setTouched(true);
+                setRate(Number(e.target.value));
+              }}
               className="mt-3 w-full accent-[var(--green)]"
             />
           </label>

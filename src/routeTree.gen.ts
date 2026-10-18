@@ -21,7 +21,10 @@ import { Route as LoanRouteImport } from './routes/loan'
 import { Route as ServicesRouteImport } from './routes/services'
 import { Route as ShopRouteImport } from './routes/shop'
 import { Route as TransparencyRouteImport } from './routes/transparency'
-import { Route as AuthenticatedManageRouteImport } from './routes/_authenticated/manage'
+import { Route as AuthenticatedManageRouteRouteImport } from './routes/_authenticated/manage/route'
+import { Route as AuthenticatedManageIndexRouteImport } from './routes/_authenticated/manage/index'
+import { Route as AuthenticatedManageApplicationsRouteImport } from './routes/_authenticated/manage/applications'
+import { Route as AuthenticatedManageSchemesRouteImport } from './routes/_authenticated/manage/schemes'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -83,11 +86,30 @@ const TransparencyRoute = TransparencyRouteImport.update({
   path: '/transparency',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedManageRoute = AuthenticatedManageRouteImport.update({
-  id: '/manage',
-  path: '/manage',
-  getParentRoute: () => AuthenticatedRouteRoute,
-} as any)
+const AuthenticatedManageRouteRoute =
+  AuthenticatedManageRouteRouteImport.update({
+    id: '/manage',
+    path: '/manage',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedManageIndexRoute =
+  AuthenticatedManageIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedManageRouteRoute,
+  } as any)
+const AuthenticatedManageApplicationsRoute =
+  AuthenticatedManageApplicationsRouteImport.update({
+    id: '/applications',
+    path: '/applications',
+    getParentRoute: () => AuthenticatedManageRouteRoute,
+  } as any)
+const AuthenticatedManageSchemesRoute =
+  AuthenticatedManageSchemesRouteImport.update({
+    id: '/schemes',
+    path: '/schemes',
+    getParentRoute: () => AuthenticatedManageRouteRoute,
+  } as any)
 const ApiPublicProductImageSplatRoute =
   ApiPublicProductImageSplatRouteImport.update({
     id: '/api/public/product-image/$',
@@ -107,7 +129,10 @@ export interface FileRoutesByFullPath {
   '/services': typeof ServicesRoute
   '/shop': typeof ShopRoute
   '/transparency': typeof TransparencyRoute
-  '/manage': typeof AuthenticatedManageRoute
+  '/manage': typeof AuthenticatedManageRouteRouteWithChildren
+  '/manage/applications': typeof AuthenticatedManageApplicationsRoute
+  '/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/manage/': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesByTo {
@@ -122,7 +147,9 @@ export interface FileRoutesByTo {
   '/services': typeof ServicesRoute
   '/shop': typeof ShopRoute
   '/transparency': typeof TransparencyRoute
-  '/manage': typeof AuthenticatedManageRoute
+  '/manage/applications': typeof AuthenticatedManageApplicationsRoute
+  '/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/manage': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRoutesById {
@@ -139,7 +166,10 @@ export interface FileRoutesById {
   '/services': typeof ServicesRoute
   '/shop': typeof ShopRoute
   '/transparency': typeof TransparencyRoute
-  '/_authenticated/manage': typeof AuthenticatedManageRoute
+  '/_authenticated/manage': typeof AuthenticatedManageRouteRouteWithChildren
+  '/_authenticated/manage/applications': typeof AuthenticatedManageApplicationsRoute
+  '/_authenticated/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/_authenticated/manage/': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
 export interface FileRouteTypes {
@@ -157,6 +187,9 @@ export interface FileRouteTypes {
     | '/shop'
     | '/transparency'
     | '/manage'
+    | '/manage/applications'
+    | '/manage/schemes'
+    | '/manage/'
     | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -171,6 +204,8 @@ export interface FileRouteTypes {
     | '/services'
     | '/shop'
     | '/transparency'
+    | '/manage/applications'
+    | '/manage/schemes'
     | '/manage'
     | '/api/public/product-image/$'
   id:
@@ -188,6 +223,9 @@ export interface FileRouteTypes {
     | '/shop'
     | '/transparency'
     | '/_authenticated/manage'
+    | '/_authenticated/manage/applications'
+    | '/_authenticated/manage/schemes'
+    | '/_authenticated/manage/'
     | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
 }
@@ -297,8 +335,29 @@ declare module '@tanstack/react-router' {
       id: '/_authenticated/manage'
       path: '/manage'
       fullPath: '/manage'
-      preLoaderRoute: typeof AuthenticatedManageRouteImport
+      preLoaderRoute: typeof AuthenticatedManageRouteRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/manage/': {
+      id: '/_authenticated/manage/'
+      path: '/'
+      fullPath: '/manage/'
+      preLoaderRoute: typeof AuthenticatedManageIndexRouteImport
+      parentRoute: typeof AuthenticatedManageRouteRoute
+    }
+    '/_authenticated/manage/applications': {
+      id: '/_authenticated/manage/applications'
+      path: '/applications'
+      fullPath: '/manage/applications'
+      preLoaderRoute: typeof AuthenticatedManageApplicationsRouteImport
+      parentRoute: typeof AuthenticatedManageRouteRoute
+    }
+    '/_authenticated/manage/schemes': {
+      id: '/_authenticated/manage/schemes'
+      path: '/schemes'
+      fullPath: '/manage/schemes'
+      preLoaderRoute: typeof AuthenticatedManageSchemesRouteImport
+      parentRoute: typeof AuthenticatedManageRouteRoute
     }
     '/api/public/product-image/$': {
       id: '/api/public/product-image/$'
@@ -310,12 +369,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedManageRouteRouteChildren {
+  AuthenticatedManageApplicationsRoute: typeof AuthenticatedManageApplicationsRoute
+  AuthenticatedManageSchemesRoute: typeof AuthenticatedManageSchemesRoute
+  AuthenticatedManageIndexRoute: typeof AuthenticatedManageIndexRoute
+}
+
+const AuthenticatedManageRouteRouteChildren: AuthenticatedManageRouteRouteChildren =
+  {
+    AuthenticatedManageApplicationsRoute: AuthenticatedManageApplicationsRoute,
+    AuthenticatedManageSchemesRoute: AuthenticatedManageSchemesRoute,
+    AuthenticatedManageIndexRoute: AuthenticatedManageIndexRoute,
+  }
+
+const AuthenticatedManageRouteRouteWithChildren =
+  AuthenticatedManageRouteRoute._addFileChildren(
+    AuthenticatedManageRouteRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
-  AuthenticatedManageRoute: typeof AuthenticatedManageRoute
+  AuthenticatedManageRouteRoute: typeof AuthenticatedManageRouteRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
-  AuthenticatedManageRoute: AuthenticatedManageRoute,
+  AuthenticatedManageRouteRoute: AuthenticatedManageRouteRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =

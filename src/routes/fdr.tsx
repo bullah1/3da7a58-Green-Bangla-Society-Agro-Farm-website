@@ -3,6 +3,8 @@ import { Page, PageHero, Section, Card } from "@/components/site/Layout";
 import { SavingsCalculator } from "@/components/site/SavingsCalculator";
 import { ApplicationForm } from "@/components/site/ApplicationForm";
 import { tx, useLang } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { fmtRate, fmtTaka, fmtYears, schemesOf, schemesQuery } from "@/lib/schemes";
 
 export const Route = createFileRoute("/fdr")({
   head: () => ({
@@ -23,15 +25,7 @@ export const Route = createFileRoute("/fdr")({
   component: Fdr,
 });
 
-const terms = [
-  { en: "1 Year", bn: "১ বছর", rate: "9.0%" },
-  { en: "2 Years", bn: "২ বছর", rate: "9.5%" },
-  { en: "3 Years", bn: "৩ বছর", rate: "10.0%" },
-  { en: "5 Years", bn: "৫ বছর", rate: "11.0%" },
-];
-
 const features = [
-  { en: "Minimum deposit ৳25,000, no maximum limit", bn: "ন্যূনতম জমা ২৫,০০০৳, সর্বোচ্চ কোনো সীমা নেই" },
   { en: "Monthly profit payout option available", bn: "মাসিক মুনাফা উত্তোলনের সুবিধা" },
   { en: "Automatic renewal on request", bn: "অনুরোধ সাপেক্ষে স্বয়ংক্রিয় নবায়ন" },
   { en: "Financing facility against the deposit", bn: "জমার বিপরীতে ঋণ সুবিধা" },
@@ -46,6 +40,9 @@ const beforeInvest = [
 
 function Fdr() {
   const { lang } = useLang();
+  const { data } = useQuery(schemesQuery);
+  const terms = schemesOf(data, "fdr");
+  const minFdr = fmtTaka(terms.length ? Math.min(...terms.map((t) => t.min_amount)) : 25000, lang);
 
   return (
     <Page>
@@ -54,19 +51,24 @@ function Fdr() {
         title={tx(lang, "Fixed deposit, predictable profit", "ফিক্সড ডিপোজিট, নিশ্চিত মুনাফা")}
         description={tx(
           lang,
-          "Deposit once, choose your term, and receive profit either monthly as income or in full at maturity. Minimum deposit ৳25,000.",
-          "একবার জমা দিন, মেয়াদ বেছে নিন এবং প্রতি মাসে বা মেয়াদ শেষে মুনাফা বুঝে নিন। সর্বনিম্ন জমা ২৫,০০০৳।"
+          `Deposit once, choose your term, and receive profit either monthly as income or in full at maturity. Minimum deposit ${minFdr}.`,
+          `একবার জমা দিন, মেয়াদ বেছে নিন এবং প্রতি মাসে বা মেয়াদ শেষে মুনাফা বুঝে নিন। সর্বনিম্ন জমা ${minFdr}।`,
         )}
       />
 
       <Section title={tx(lang, "Term & profit rates", "মেয়াদ ও মুনাফার হার")}>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {terms.map((p) => (
-            <Card key={p.en}>
-              <h3 className="text-base font-bold text-green-deep">{tx(lang, p.en, p.bn)}</h3>
-              <p className="mt-3 font-display text-3xl font-extrabold text-green-dark">{p.rate}</p>
+            <Card key={p.id}>
+              <h3 className="text-base font-bold text-green-deep">{fmtYears(p.years, lang)}</h3>
+              <p className="mt-3 font-display text-3xl font-extrabold text-green-dark">
+                {fmtRate(p.rate, lang)}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {tx(lang, "Indicative annual profit rate", "বার্ষিক আনুমানিক মুনাফার হার")}
+              </p>
+              <p className="mt-4 text-sm font-semibold text-foreground">
+                {tx(lang, "Minimum", "ন্যূনতম")} {fmtTaka(p.min_amount, lang)}
               </p>
             </Card>
           ))}
@@ -75,6 +77,13 @@ function Fdr() {
           <Card>
             <h3 className="text-base font-bold text-green-deep">{tx(lang, "Key features", "মূল বৈশিষ্ট্যসমূহ")}</h3>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+              <li>
+                {tx(
+                  lang,
+                  `Minimum deposit ${minFdr}, no maximum limit`,
+                  `ন্যূনতম জমা ${minFdr}, সর্বোচ্চ কোনো সীমা নেই`,
+                )}
+              </li>
               {features.map((f) => (
                 <li key={f.en}>{tx(lang, f.en, f.bn)}</li>
               ))}

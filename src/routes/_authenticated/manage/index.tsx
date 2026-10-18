@@ -1,13 +1,13 @@
-import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { Page, PageHero, Section, Card } from "@/components/site/Layout";
+import { Card } from "@/components/site/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { imageSrc, productsQuery, type Product } from "@/lib/products";
 import { bdt } from "@/lib/site";
 import { tx, useLang } from "@/lib/i18n";
 
-export const Route = createFileRoute("/_authenticated/manage")({
+export const Route = createFileRoute("/_authenticated/manage/")({
   head: () => ({
     meta: [
       { title: "Manage Agro Shop Products | Green Bangla" },
@@ -67,7 +67,6 @@ function toDraft(p: Product): Draft {
 
 function ManagePage() {
   const { lang } = useLang();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { data = [], isLoading } = useQuery(productsQuery);
 
@@ -77,13 +76,6 @@ function ManagePage() {
   const [notice, setNotice] = useState<string | null>(null);
 
   const refresh = () => queryClient.invalidateQueries({ queryKey: ["products"] });
-
-  async function signOut() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   async function uploadPhoto(file: File) {
     setBusy(true);
@@ -188,18 +180,8 @@ function ManagePage() {
   }
 
   return (
-    <Page>
-      <PageHero
-        eyebrow={tx(lang, "Owner area", "মালিকের এলাকা")}
-        title={tx(lang, "Manage your shop", "আপনার শপ পরিচালনা করুন")}
-        description={tx(
-          lang,
-          "Add products, change prices, mark items in or out of stock and upload your own photos. Every change shows on the Agro Shop page immediately.",
-          "নতুন পণ্য যোগ করুন, দাম পরিবর্তন করুন, স্টক আপডেট করুন এবং ছবি আপলোড করুন। প্রতিটি পরিবর্তন সাথে সাথে অ্যাগ্রো শপ পাতায় দেখা যাবে।",
-        )}
-      />
-
-      <Section>
+    <>
+      <div>
         <div className="flex flex-wrap items-center gap-3">
           <button
             type="button"
@@ -212,19 +194,12 @@ function ManagePage() {
           >
             {tx(lang, "+ Add product", "+ পণ্য যোগ করুন")}
           </button>
-          <button
-            type="button"
-            onClick={signOut}
-            className="rounded-lg border border-border px-4 py-2.5 text-sm font-bold text-muted-foreground hover:text-green-deep"
-          >
-            {tx(lang, "Sign out", "সাইন আউট")}
-          </button>
           {error ? <span className="text-sm font-semibold text-red-dark">{error}</span> : null}
           {notice ? <span className="text-sm font-semibold text-green-dark">{notice}</span> : null}
         </div>
 
         {draft ? (
-          <Card>
+          <Card className="mt-5">
             <div className="mt-0 grid gap-4 sm:grid-cols-2">
               <Field label={tx(lang, "Product name", "পণ্যের নাম")}>
                 <input
@@ -397,8 +372,8 @@ function ManagePage() {
             ))}
           </div>
         )}
-      </Section>
-    </Page>
+      </div>
+    </>
   );
 }
 

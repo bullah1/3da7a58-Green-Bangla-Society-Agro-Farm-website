@@ -3,6 +3,8 @@ import { Page, PageHero, Section, Card } from "@/components/site/Layout";
 import { SavingsCalculator } from "@/components/site/SavingsCalculator";
 import { ApplicationForm } from "@/components/site/ApplicationForm";
 import { tx, useLang } from "@/lib/i18n";
+import { useQuery } from "@tanstack/react-query";
+import { fmtRate, fmtTaka, fmtYears, schemesOf, schemesQuery } from "@/lib/schemes";
 
 export const Route = createFileRoute("/dps")({
   head: () => ({
@@ -23,14 +25,10 @@ export const Route = createFileRoute("/dps")({
   component: Dps,
 });
 
-const plans = [
-  { en: "3 Years", bn: "৩ বছর", rate: "8.0%", minEn: "৳500 / month", minBn: "৳৫০০ / মাস" },
-  { en: "5 Years", bn: "৫ বছর", rate: "9.0%", minEn: "৳1,000 / month", minBn: "৳১,০০০ / মাস" },
-  { en: "10 Years", bn: "১০ বছর", rate: "10.0%", minEn: "৳1,000 / month", minBn: "৳১,০০০ / মাস" },
-];
-
 function Dps() {
   const { lang } = useLang();
+  const { data } = useQuery(schemesQuery);
+  const plans = schemesOf(data, "dps");
 
   return (
     <Page>
@@ -47,14 +45,17 @@ function Dps() {
       <Section title={tx(lang, "Available terms", "উপলব্ধ মেয়াদসমূহ")}>
         <div className="grid gap-5 sm:grid-cols-3">
           {plans.map((p) => (
-            <Card key={p.en}>
-              <h3 className="text-base font-bold text-green-deep">{tx(lang, p.en, p.bn)}</h3>
-              <p className="mt-3 font-display text-3xl font-extrabold text-green-dark">{p.rate}</p>
+            <Card key={p.id}>
+              <h3 className="text-base font-bold text-green-deep">{fmtYears(p.years, lang)}</h3>
+              <p className="mt-3 font-display text-3xl font-extrabold text-green-dark">
+                {fmtRate(p.rate, lang)}
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 {tx(lang, "Indicative annual profit rate", "বার্ষিক আনুমানিক মুনাফার হার")}
               </p>
               <p className="mt-4 text-sm font-semibold text-foreground">
-                {tx(lang, "Minimum", "নূন্যতম")} {tx(lang, p.minEn, p.minBn)}
+                {tx(lang, "Minimum", "ন্যূনতম")} {fmtTaka(p.min_amount, lang)} /{" "}
+                {tx(lang, "month", "মাস")}
               </p>
             </Card>
           ))}
