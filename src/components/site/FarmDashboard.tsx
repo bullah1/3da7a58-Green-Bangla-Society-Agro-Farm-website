@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { tx, useLang } from "@/lib/i18n";
 
 type FarmStats = {
@@ -32,7 +32,10 @@ const fallback: FarmStats = {
 const labelMap: Record<string, { en: string; bn: string }> = {
   "Total land under cultivation": { en: "Total land under cultivation", bn: "মোট আবাদি জমি" },
   "42 acres": { en: "42 acres", bn: "৪২ একর" },
-  "Cattle & goats (livestock)": { en: "Cattle & goats (livestock)", bn: "গবাদি পশু ও ছাগল (লাইভস্টক)" },
+  "Cattle & goats (livestock)": {
+    en: "Cattle & goats (livestock)",
+    bn: "গবাদি পশু ও ছাগল (লাইভস্টক)",
+  },
   "260 heads": { en: "260 heads", bn: "২৬০টি" },
   "Poultry birds": { en: "Poultry birds", bn: "হাঁস-মুরগি" },
   "12,500 birds": { en: "12,500 birds", bn: "১২,৫০০টি" },
@@ -77,21 +80,21 @@ const monthBn: Record<string, string> = {
 };
 
 const series = [
-  { key: "crop" as const, en_name: "Crop", bn_name: "শস্য", color: "#15803d" },
-  { key: "livestock" as const, en_name: "Livestock", bn_name: "গবাদি পশু", color: "#b45309" },
-  { key: "poultry" as const, en_name: "Poultry", bn_name: "হাঁস-মুরগি", color: "#b91c1c" },
+  { key: "crop" as const, en_name: "Crop", bn_name: "শস্য", color: "#008e4c" },
+  { key: "livestock" as const, en_name: "Livestock", bn_name: "গবাদি পশু", color: "#1d6fd1" },
+  { key: "poultry" as const, en_name: "Poultry", bn_name: "হাঁস-মুরগি", color: "#c21118" },
 ];
 
 export function TrendLegend() {
   const { lang } = useLang();
   return (
-    <div className="flex flex-wrap gap-4">
+    <div className="flex flex-wrap gap-x-4 gap-y-1">
       {series.map((s) => (
         <span
           key={s.key}
           className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground"
         >
-          <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+          <span className="h-0.5 w-4 rounded-full" style={{ background: s.color }} />
           {tx(lang, s.en_name, s.bn_name)}
         </span>
       ))}
@@ -103,149 +106,251 @@ function toBnNum(n: number) {
   return n.toLocaleString("bn-BD");
 }
 
+function useWidth<T extends HTMLElement>() {
+  // Callback ref: starts observing whenever the element actually mounts.
+  const [el, setEl] = useState<T | null>(null);
+  const [width, setWidth] = useState(0);
+  useEffect(() => {
+    if (!el) return;
+    setWidth(Math.round(el.getBoundingClientRect().width));
+    if (typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(([entry]) => {
+      if (entry) setWidth(Math.round(entry.contentRect.width));
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [el]);
+  return [setEl, width] as const;
+}
+
 function TrendChart({ data }: { data: FarmStats["monthlyProduction"] }) {
   const { lang } = useLang();
   const [hover, setHover] = useState<number | null>(null);
+  const [wrapRef, measured] = useWidth<HTMLDivElement>();
   if (data.length === 0) return null;
-  const W = 620;
-  const H = 220;
-  const pad = 32;
-  const x = (i: number) => pad + (i * (W - pad * 2)) / Math.max(data.length - 1, 1);
-  const y = (v: number) => H - pad - (v / 100) * (H - pad * 2);
-  const monthLabel = (m: string) => (lang === "bn" ? (monthBn[m] ?? m) : m);
-  const fmt = (v: number) => `${lang === "bn" ? toBnNum(v) : v}%`;
+  const W = Math.max(280, measured || 640);
+
+  const compact = W < 520;
+  const H = compact ? 220 : 260;
+  const m = { top: 14, right: compact ? 62 : 112, bottom: 30, left: 38 };
+  const innerW = W - m.left - m.right;
+  const innerH = H - m.top - m.bottom;
+
+  // Zoom the y-axis to the data, rounded down to the nearest 10, capped at 100.
+  const all = data.flatMap((d) => series.map((s) => d[s.key]));
+  const yMin = Math.max(0, Math.floor((Math.min(...all) - 5) / 10) * 10);
+  const yMax = 100;
+  const ticks: number[] = [];
+  const step = yMax - yMin > 50 ? 20 : 10;
+  for (let t = yMin; t <= yMax; t += step) ticks.push(t);
+
+  const x = (i: number) => m.left + (i * innerW) / Math.max(data.length - 1, 1);
+  const y = (v: number) => m.top + innerH - ((v - yMin) / (yMax - yMin)) * innerH;
+  const num = (v: number) => (lang === "bn" ? toBnNum(v) : String(v));
+  const pct = (v: number) => `${num(v)}%`;
+  const monthLabel = (mo: string) => (lang === "bn" ? (monthBn[mo] ?? mo) : mo);
+  const name = (s: (typeof series)[number]) => tx(lang, s.en_name, s.bn_name);
+
+  // End-of-line labels, nudged apart so they never overlap.
+  const last = data[data.length - 1]!;
+  const ends = series
+    .map((s) => ({ s, v: last[s.key], ty: y(last[s.key]) }))
+    .sort((a, b) => a.ty - b.ty);
+  for (let i = 1; i < ends.length; i++) {
+    const prev = ends[i - 1]!;
+    const cur = ends[i]!;
+    if (cur.ty - prev.ty < 16) cur.ty = prev.ty + 16;
+  }
+
+  const colW = innerW / Math.max(data.length - 1, 1);
+  const active = hover !== null ? data[hover] : null;
+  const tipLeft = hover !== null ? x(hover) : 0;
+  const tipFlip = hover !== null && tipLeft > W - 200;
 
   return (
-    <div className="relative">
+    <div ref={wrapRef} className="relative w-full">
       <svg
+        width={W}
+        height={H}
         viewBox={`0 0 ${W} ${H}`}
-        className="h-56 w-full"
+        className={`block max-w-full touch-pan-y outline-none ${measured ? "" : "invisible"}`}
         role="img"
         aria-label={tx(lang, "Monthly production trend", "মাসিক উৎপাদন প্রবণতা")}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "ArrowRight")
+            setHover((h) => (h === null ? 0 : Math.min(data.length - 1, h + 1)));
+          if (e.key === "ArrowLeft")
+            setHover((h) => (h === null ? data.length - 1 : Math.max(0, h - 1)));
+          if (e.key === "Escape") setHover(null);
+        }}
+        onBlur={() => setHover(null)}
+        onMouseLeave={() => setHover(null)}
       >
-        {[25, 50, 75, 100].map((g) => (
-          <g key={g}>
+        {ticks.map((t) => (
+          <g key={t}>
             <line
-              x1={pad}
-              x2={W - pad}
-              y1={y(g)}
-              y2={y(g)}
-              stroke="currentColor"
-              className="text-border"
+              x1={m.left}
+              x2={W - m.right}
+              y1={y(t)}
+              y2={y(t)}
+              stroke="var(--border)"
               strokeWidth="1"
+              strokeDasharray={t === yMin ? undefined : "2 4"}
             />
             <text
-              x={4}
-              y={y(g) + 4}
-              fontSize="10"
-              fill="currentColor"
-              className="text-muted-foreground"
+              x={m.left - 8}
+              y={y(t) + 4}
+              fontSize="11"
+              textAnchor="end"
+              fill="var(--muted-text)"
             >
-              {lang === "bn" ? toBnNum(g) : g}
+              {pct(t)}
             </text>
           </g>
         ))}
+
+        {data.map((d, i) =>
+          compact && i % 2 === 1 && hover !== i ? null : (
+            <text
+              key={d.month}
+              x={x(i)}
+              y={H - 8}
+              fontSize="11"
+              textAnchor={i === 0 ? "start" : i === data.length - 1 ? "end" : "middle"}
+              fill={hover === i ? "var(--text)" : "var(--muted-text)"}
+              fontWeight={hover === i ? 700 : 400}
+            >
+              {monthLabel(d.month)}
+            </text>
+          ),
+        )}
+
+        {hover !== null && (
+          <line
+            x1={x(hover)}
+            x2={x(hover)}
+            y1={m.top}
+            y2={m.top + innerH}
+            stroke="var(--muted-text)"
+            strokeWidth="1"
+            opacity="0.45"
+          />
+        )}
+
         {series.map((s) => (
           <polyline
             key={s.key}
             fill="none"
             stroke={s.color}
-            strokeWidth="2.5"
+            strokeWidth="2"
             strokeLinejoin="round"
             strokeLinecap="round"
             points={data.map((d, i) => `${x(i)},${y(d[s.key])}`).join(" ")}
           />
         ))}
-        {/* Data points with hover/tap targets */}
+
         {series.map((s) =>
           data.map((d, i) => (
-            <g key={`${s.key}-${d.month}`}>
-              <circle
-                cx={x(i)}
-                cy={y(d[s.key])}
-                r={hover === i ? 5 : 3.5}
-                fill={s.color}
-                stroke="#fff"
-                strokeWidth="1.5"
-                className="pointer-events-none transition-all"
-              />
-              {/* Larger invisible hit area for hover / tap */}
-              <circle
-                cx={x(i)}
-                cy={y(d[s.key])}
-                r={14}
-                fill="transparent"
-                className="cursor-pointer"
-                onMouseEnter={() => setHover(i)}
-                onMouseLeave={() => setHover(null)}
-                onClick={() => setHover(hover === i ? null : i)}
-              >
-                <title>{`${tx(lang, s.en_name, s.bn_name)}: ${fmt(d[s.key])}`}</title>
-              </circle>
-            </g>
+            <circle
+              key={`${s.key}-${d.month}`}
+              cx={x(i)}
+              cy={y(d[s.key])}
+              r={hover === i ? 5 : i === data.length - 1 ? 3.5 : 0}
+              fill={s.color}
+              stroke="#fff"
+              strokeWidth="2"
+              className="pointer-events-none"
+            />
           )),
         )}
-        {/* Last-point value labels */}
-        {series.map((s) => {
-          const last = data[data.length - 1]!;
-          return (
-            <text
-              key={`label-${s.key}`}
-              x={x(data.length - 1) + 8}
-              y={y(last[s.key]) + 4}
-              fontSize="11"
-              fontWeight="700"
-              fill={s.color}
-            >
-              {fmt(last[s.key])}
+
+        {ends.map(({ s, v, ty }) => (
+          <g key={`end-${s.key}`}>
+            <text x={W - m.right + 10} y={ty + 4} fontSize="12" fontWeight="700" fill="var(--text)">
+              {pct(v)}
             </text>
-          );
-        })}
-        {/* Hover guideline */}
-        {hover !== null && (
-          <line
-            x1={x(hover)}
-            x2={x(hover)}
-            y1={pad - 6}
-            y2={H - pad}
-            stroke="currentColor"
-            className="text-muted-foreground"
-            strokeWidth="1"
-            strokeDasharray="3 3"
-            opacity="0.5"
-          />
-        )}
+            {!compact && (
+              <text x={W - m.right + 46} y={ty + 4} fontSize="11" fill="var(--muted-text)">
+                {name(s)}
+              </text>
+            )}
+          </g>
+        ))}
+
+        {/* One full-height hit column per month: easy to hover or tap. */}
         {data.map((d, i) => (
-          <text
-            key={d.month}
-            x={x(i)}
-            y={H - 8}
-            fontSize="10"
-            textAnchor="middle"
-            fill="currentColor"
-            className="text-muted-foreground"
-          >
-            {monthLabel(d.month)}
-          </text>
+          <rect
+            key={`hit-${d.month}`}
+            x={x(i) - colW / 2}
+            y={m.top}
+            width={colW}
+            height={innerH}
+            fill="transparent"
+            className="cursor-crosshair"
+            onMouseEnter={() => setHover(i)}
+            onClick={() => setHover(hover === i ? null : i)}
+          />
         ))}
       </svg>
-      {/* Tooltip */}
-      {hover !== null && (
-        <div className="pointer-events-none absolute left-1/2 top-0 z-10 -translate-x-1/2 rounded-lg border border-border bg-card px-3 py-2 shadow-card">
-          <p className="mb-1 text-[11px] font-bold text-green-deep">
-            {monthLabel(data[hover]!.month)}
-          </p>
-          <div className="flex gap-3">
-            {series.map((s) => (
-              <span key={s.key} className="flex items-center gap-1 text-[11px] font-semibold">
-                <span className="h-2 w-2 rounded-full" style={{ background: s.color }} />
-                <span className="text-muted-foreground">{tx(lang, s.en_name, s.bn_name)}:</span>
-                <span style={{ color: s.color }}>{fmt(data[hover]![s.key])}</span>
-              </span>
-            ))}
-          </div>
+
+      {active && hover !== null && (
+        <div
+          className="pointer-events-none absolute z-10 min-w-36 rounded-lg border border-border bg-card px-3 py-2 shadow-card"
+          style={{
+            top: m.top,
+            left: tipFlip ? undefined : tipLeft + 12,
+            right: tipFlip ? W - tipLeft + 12 : undefined,
+          }}
+        >
+          <p className="mb-1.5 text-xs font-bold text-foreground">{monthLabel(active.month)}</p>
+          <ul className="space-y-1">
+            {[...series]
+              .sort((a, b) => active[b.key] - active[a.key])
+              .map((s) => (
+                <li key={s.key} className="flex items-center justify-between gap-4 text-xs">
+                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                    <span className="h-0.5 w-3 rounded-full" style={{ background: s.color }} />
+                    {name(s)}
+                  </span>
+                  <span className="font-bold text-foreground">{pct(active[s.key])}</span>
+                </li>
+              ))}
+          </ul>
         </div>
       )}
+
+      <details className="mt-3 text-xs text-muted-foreground">
+        <summary className="cursor-pointer font-semibold text-green-dark">
+          {tx(lang, "Show as table", "টেবিল আকারে দেখুন")}
+        </summary>
+        <div className="mt-2 overflow-x-auto">
+          <table className="w-full min-w-[22rem] text-left">
+            <thead>
+              <tr className="border-b border-border">
+                <th className="py-1.5 pr-3 font-semibold">{tx(lang, "Month", "মাস")}</th>
+                {series.map((s) => (
+                  <th key={s.key} className="py-1.5 pr-3 text-right font-semibold">
+                    {name(s)}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((d) => (
+                <tr key={d.month} className="border-b border-border/60">
+                  <td className="py-1.5 pr-3">{monthLabel(d.month)}</td>
+                  {series.map((s) => (
+                    <td key={s.key} className="py-1.5 pr-3 text-right text-foreground">
+                      {pct(d[s.key])}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </div>
   );
 }
@@ -313,18 +418,21 @@ export function FarmDashboard() {
               {tx(lang, "Production rate (%)", "উৎপাদনের হার (%)")}
             </p>
           </div>
-          <TrendLegend />
           {stats.updatedAt && (
             <p className="text-[11px] font-semibold text-muted-foreground">
               {tx(lang, "Last updated", "সর্বশেষ আপডেট")}:{" "}
-              {new Date(stats.updatedAt).toLocaleString(lang === "en" ? "en-GB" : "bn-BD", {
-                dateStyle: "medium",
-                timeStyle: "short",
+              {new Date(stats.updatedAt).toLocaleDateString(lang === "en" ? "en-GB" : "bn-BD", {
+                day: "numeric",
+                month: "long",
+                year: "numeric",
               })}
             </p>
           )}
         </div>
         <div className="mt-4">
+          <TrendLegend />
+        </div>
+        <div className="mt-3">
           <TrendChart data={stats.monthlyProduction} />
         </div>
       </div>
