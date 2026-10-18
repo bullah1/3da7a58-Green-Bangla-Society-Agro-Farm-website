@@ -1,0 +1,186 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Green Bangla design system.
+ * Brand palette is fixed by the client brief (see :root below).
+ * Never hardcode colors in components — use these tokens.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-display: "Noto Serif Bengali", "Hind Siliguri", Georgia, serif;
+  --font-sans: "Hind Siliguri", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-surface: var(--bg2);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-green: var(--green);
+  --color-green-dark: var(--green-dark);
+  --color-green-deep: var(--green-deep);
+  --color-red: var(--red);
+  --color-red-dark: var(--red-dark);
+
+  --shadow-card: 0 1px 2px rgba(4, 92, 51, 0.04), 0 12px 32px -18px rgba(4, 92, 51, 0.25);
+  --shadow-lift: 0 20px 48px -24px rgba(4, 92, 51, 0.38);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  /* Brand palette (client-mandated) */
+  --bg: #f3faf5;
+  --bg2: #eaf6ee;
+  --green: #00a652;
+  --green-dark: #008e4c;
+  --green-deep: #045c33;
+  --red: #ed1b24;
+  --red-dark: #c21118;
+  --text: #0f2e1c;
+  --muted-text: #4b6b57;
+  --card-bg: #ffffff;
+
+  /* Semantic mapping */
+  --background: var(--bg);
+  --foreground: var(--text);
+  --card: var(--card-bg);
+  --card-foreground: var(--text);
+  --popover: var(--card-bg);
+  --popover-foreground: var(--text);
+  --primary: var(--green);
+  --primary-foreground: #ffffff;
+  --secondary: var(--bg2);
+  --secondary-foreground: var(--green-deep);
+  --muted: var(--bg2);
+  --muted-foreground: var(--muted-text);
+  --accent: var(--bg2);
+  --accent-foreground: var(--green-deep);
+  --destructive: var(--red);
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 142, 76, 0.18);
+  --input: rgba(0, 142, 76, 0.18);
+  --ring: var(--green-dark);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+    text-wrap: balance;
+  }
+
+  h3,
+  h4 {
+    font-family: var(--font-sans);
+    line-height: 1.35;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--green-dark);
+    outline-offset: 2px;
+  }
+}
+
+@utility surface-grad {
+  background-image: linear-gradient(160deg, var(--bg) 0%, var(--bg2) 100%);
+}
+
+@utility brand-grad {
+  background-image: linear-gradient(135deg, var(--green) 0%, var(--green-deep) 100%);
+}
+
+@utility hairline-top {
+  border-top: 1px solid var(--border);
+}
+
+/* Small red disc — the one recurring motif, taken from the flag of Bangladesh. */
+@utility red-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background-color: var(--red);
+  flex-shrink: 0;
+}
+
+@utility hero-shade {
+  background-image: linear-gradient(
+    100deg,
+    rgba(3, 54, 31, 0.92) 0%,
+    rgba(4, 92, 51, 0.78) 45%,
+    rgba(4, 92, 51, 0.15) 100%
+  );
+}
+
+@media (max-width: 640px) {
+  .hero-shade {
+    background-image: linear-gradient(180deg, rgba(3, 54, 31, 0.55) 0%, rgba(3, 54, 31, 0.92) 70%);
+  }
+}
+
+@keyframes hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility hero-rise {
+  animation: hero-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-rise {
+    animation: none;
+  }
+}

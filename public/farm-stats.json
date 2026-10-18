@@ -1,0 +1,26 @@
+{
+  "updatedAt": "2026-09-09T17:00:00+06:00",
+  "stats": [
+    { "label": "Total land under cultivation", "value": "42 acres", "pct": 84 },
+    { "label": "Cattle & goats (livestock)", "value": "260 heads", "pct": 62 },
+    { "label": "Poultry birds", "value": "12,500 birds", "pct": 92 },
+    { "label": "Fish ponds (water area)", "value": "9 acres", "pct": 45 },
+    { "label": "Nursery saplings", "value": "38,000 plants", "pct": 74 },
+    { "label": "Direct employment", "value": "120 people", "pct": 55 }
+  ],
+  "capacity": [
+    { "label": "Crop", "pct": 78 },
+    { "label": "Livestock", "pct": 64 },
+    { "label": "Poultry", "pct": 88 },
+    { "label": "Fishery", "pct": 52 },
+    { "label": "Nursery", "pct": 70 }
+  ],
+  "monthlyProduction": [
+    { "month": "Apr", "crop": 62, "livestock": 55, "poultry": 74 },
+    { "month": "May", "crop": 66, "livestock": 58, "poultry": 78 },
+    { "month": "Jun", "crop": 71, "livestock": 60, "poultry": 81 },
+    { "month": "Jul", "crop": 69, "livestock": 62, "poultry": 83 },
+    { "month": "Aug", "crop": 74, "livestock": 63, "poultry": 86 },
+    { "month": "Sep", "crop": 78, "livestock": 64, "poultry": 88 }
+  ]
+}
