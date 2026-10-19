@@ -88,7 +88,9 @@ function ManagePage() {
         .upload(path, file, { contentType: file.type || "image/jpeg" });
       if (err) throw err;
       setDraft((d) => (d ? { ...d, image: `storage:${path}` } : d));
-      setNotice(tx(lang, "Photo uploaded. Remember to save.", "ছবি আপলোড হয়েছে। সংরক্ষণ করতে ভুলবেন না।"));
+      setNotice(
+        tx(lang, "Photo uploaded. Remember to save.", "ছবি আপলোড হয়েছে। সংরক্ষণ করতে ভুলবেন না।"),
+      );
     } catch (err) {
       setError(
         err instanceof Error
@@ -116,8 +118,7 @@ function ManagePage() {
         description: draft.description.trim() || null,
         sort_order: Number(draft.sort_order) || 0,
       };
-      if (!row.name)
-        throw new Error(tx(lang, "Product name is required.", "পণ্যের নাম প্রয়োজন।"));
+      if (!row.name) throw new Error(tx(lang, "Product name is required.", "পণ্যের নাম প্রয়োজন।"));
 
       if (draft.id) {
         const { error: err } = await supabase.from("products").update(row).eq("id", draft.id);
@@ -149,11 +150,7 @@ function ManagePage() {
   async function remove(p: Product) {
     if (
       !window.confirm(
-        tx(
-          lang,
-          `Delete “${p.name}” from the shop?`,
-          `শপ থেকে “${p.name}” ডিলিট করবেন?`,
-        ),
+        tx(lang, `Delete “${p.name}” from the shop?`, `শপ থেকে “${p.name}” ডিলিট করবেন?`),
       )
     )
       return;
@@ -296,7 +293,9 @@ function ManagePage() {
                 onClick={() => void save()}
                 className="rounded-lg bg-green-dark px-4 py-2.5 text-sm font-bold text-primary-foreground hover:bg-green-deep disabled:opacity-60"
               >
-                {busy ? tx(lang, "Saving…", "সংরক্ষণ করা হচ্ছে…") : tx(lang, "Save product", "পণ্য সংরক্ষণ করুন")}
+                {busy
+                  ? tx(lang, "Saving…", "সংরক্ষণ করা হচ্ছে…")
+                  : tx(lang, "Save product", "পণ্য সংরক্ষণ করুন")}
               </button>
               <button
                 type="button"
@@ -310,7 +309,9 @@ function ManagePage() {
         ) : null}
 
         {isLoading ? (
-          <p className="mt-6 text-sm text-muted-foreground">{tx(lang, "Loading products…", "পণ্য লোড হচ্ছে…")}</p>
+          <p className="mt-6 text-sm text-muted-foreground">
+            {tx(lang, "Loading products…", "পণ্য লোড হচ্ছে…")}
+          </p>
         ) : (
           <div className="mt-6 space-y-3">
             {data.map((p) => (
@@ -333,8 +334,7 @@ function ManagePage() {
                   </p>
                   <p className="text-sm font-bold text-green-deep">{p.name}</p>
                   <p className="text-sm font-semibold text-foreground">
-                    ৳ {bdt(p.price)}{" "}
-                    <span className="text-xs text-muted-foreground">{p.unit}</span>
+                    ৳ {bdt(p.price)} <span className="text-xs text-muted-foreground">{p.unit}</span>
                   </p>
                 </div>
                 <button
@@ -347,7 +347,9 @@ function ManagePage() {
                       : "border-red-dark text-red-dark"
                   }`}
                 >
-                  {p.available ? tx(lang, "In stock", "স্টকে আছে") : tx(lang, "Out of stock", "স্টক শেষ")}
+                  {p.available
+                    ? tx(lang, "In stock", "স্টকে আছে")
+                    : tx(lang, "Out of stock", "স্টক শেষ")}
                 </button>
                 <button
                   type="button"

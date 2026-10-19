@@ -1,6 +1,6 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardList, LogOut, Package, Percent } from "lucide-react";
+import { ClipboardList, LogOut, Package, Percent, Settings2 } from "lucide-react";
 import { Page } from "@/components/site/Layout";
 import { supabase } from "@/integrations/supabase/client";
 import { applicationsQuery } from "@/lib/applications";
@@ -8,10 +8,7 @@ import { tx, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/_authenticated/manage")({
   head: () => ({
-    meta: [
-      { title: "Admin | Green Bangla" },
-      { name: "robots", content: "noindex, nofollow" },
-    ],
+    meta: [{ title: "Admin | Green Bangla" }, { name: "robots", content: "noindex, nofollow" }],
   }),
   component: AdminLayout,
 });
@@ -41,7 +38,22 @@ function AdminLayout() {
       bn: "আবেদন",
       badge: newCount,
     },
-    { to: "/manage/schemes" as const, exact: false, icon: Percent, en: "DPS / FDR rates", bn: "ডিপিএস / এফডিআর হার", badge: 0 },
+    {
+      to: "/manage/schemes" as const,
+      exact: false,
+      icon: Percent,
+      en: "DPS / FDR rates",
+      bn: "ডিপিএস / এফডিআর হার",
+      badge: 0,
+    },
+    {
+      to: "/manage/settings" as const,
+      exact: false,
+      icon: Settings2,
+      en: "Site settings",
+      bn: "সাইট সেটিং",
+      badge: 0,
+    },
   ];
 
   return (
@@ -81,7 +93,9 @@ function AdminLayout() {
                 to={t.to}
                 activeOptions={{ exact: t.exact }}
                 activeProps={{ className: "border-green-dark text-green-deep" }}
-                inactiveProps={{ className: "border-transparent text-muted-foreground hover:text-green-deep" }}
+                inactiveProps={{
+                  className: "border-transparent text-muted-foreground hover:text-green-deep",
+                }}
                 className="inline-flex shrink-0 items-center gap-2 border-b-2 px-3 py-3 text-sm font-bold transition-colors"
               >
                 <t.icon className="size-4" aria-hidden="true" />

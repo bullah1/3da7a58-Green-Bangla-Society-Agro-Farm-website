@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Page, PageHero, Section, Card } from "@/components/site/Layout";
 import { FarmDashboard } from "@/components/site/FarmDashboard";
-import agroFarm from "@/assets/agro-farm.jpg";
+import { useSite } from "@/lib/settings";
 import { tx, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/agro")({
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/agro")({
 
 function Agro() {
   const { lang } = useLang();
+  const site = useSite();
 
   const units = [
     {
@@ -69,7 +70,11 @@ function Agro() {
     <Page>
       <PageHero
         eyebrow={tx(lang, "Agro Farm", "এগ্রো ফার্ম")}
-        title={tx(lang, "An integrated farm, not a single crop", "একটি সমন্বিত খামার, একক কোনো ফসল নয়")}
+        title={tx(
+          lang,
+          "An integrated farm, not a single crop",
+          "একটি সমন্বিত খামার, একক কোনো ফসল নয়",
+        )}
         description={tx(
           lang,
           "Green Bangla Agro Farm combines crops, livestock, poultry, fisheries and a nursery so land, feed and waste circulate within one system — better yield, lower cost, honest food.",
@@ -79,7 +84,7 @@ function Agro() {
 
       <Section>
         <img
-          src={agroFarm}
+          src={site.agroImage}
           alt={tx(
             lang,
             "Poultry shed, cattle and fish pond at Green Bangla Agro Farm",

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Page, PageHero, Section, Card } from "@/components/site/Layout";
 import { ApplicationForm } from "@/components/site/ApplicationForm";
-import { site, waLink } from "@/lib/site";
+import { useSite } from "@/lib/settings";
 import { tx, useLang } from "@/lib/i18n";
 
 export const Route = createFileRoute("/contact")({
@@ -25,6 +25,7 @@ export const Route = createFileRoute("/contact")({
 
 function Contact() {
   const { lang } = useLang();
+  const site = useSite();
   return (
     <Page>
       <PageHero
@@ -33,7 +34,7 @@ function Contact() {
         description={tx(
           lang,
           "Send an application from this page and it reaches us instantly on WhatsApp or email — no account or login needed.",
-          "এই পৃষ্ঠা থেকে আবেদন পাঠান এবং তা সরাসরি আমাদের হোয়াটসঅ্যাপ বা ইমেলে পৌঁছে যাবে — কোনো অ্যাকাউন্ট বা লগইনের প্রয়োজন নেই।"
+          "এই পৃষ্ঠা থেকে আবেদন পাঠান এবং তা সরাসরি আমাদের হোয়াটসঅ্যাপ বা ইমেলে পৌঁছে যাবে — কোনো অ্যাকাউন্ট বা লগইনের প্রয়োজন নেই।",
         )}
       />
 
@@ -43,26 +44,37 @@ function Contact() {
             <Card>
               <h2 className="text-base font-bold text-green-deep">{tx(lang, "Office", "অফিস")}</h2>
               <p className="mt-2 text-sm text-muted-foreground">{site.address}</p>
-              <p className="mt-3 text-sm font-semibold text-foreground">{tx(lang, "Sat – Thu, 9:00 – 18:00", "শনি – বৃহস্পতি, ৯:০০ – ১৮:০০")}</p>
-              <p className="text-xs text-muted-foreground">{tx(lang, "Friday closed", "শুক্রবার বন্ধ")}</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                {tx(lang, "Sat – Thu, 9:00 – 18:00", "শনি – বৃহস্পতি, ৯:০০ – ১৮:০০")}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {tx(lang, "Friday closed", "শুক্রবার বন্ধ")}
+              </p>
             </Card>
             <Card>
-              <h2 className="text-base font-bold text-green-deep">{tx(lang, "Reach us", "আমাদের সাথে যোগাযোগ")}</h2>
+              <h2 className="text-base font-bold text-green-deep">
+                {tx(lang, "Reach us", "আমাদের সাথে যোগাযোগ")}
+              </h2>
               <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
                 <li>
                   {tx(lang, "Phone:", "ফোন:")}{" "}
-                  <a className="font-semibold text-green-dark" href={`tel:${site.phone}`}>
+                  <a className="font-semibold text-green-dark" href={site.tel(site.phone)}>
                     {site.phone}
                   </a>
                   {", "}
-                  <a className="font-semibold text-green-dark" href={`tel:${site.phone2}`}>
+                  <a className="font-semibold text-green-dark" href={site.tel(site.phone2)}>
                     {site.phone2}
                   </a>
                 </li>
                 <li>
                   WhatsApp:{" "}
-                  <a className="font-semibold text-green-dark" href={`https://wa.me/${site.whatsapp}`} target="_blank" rel="noreferrer">
-                    {site.whatsappDisplay}
+                  <a
+                    className="font-semibold text-green-dark"
+                    href={`https://wa.me/${site.whatsappNumber}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    {site.whatsapp}
                   </a>
                 </li>
                 <li>
@@ -77,14 +89,21 @@ function Contact() {
                 </li>
                 <li>
                   Facebook:{" "}
-                  <a className="font-semibold text-green-dark" href={site.facebook} target="_blank" rel="noreferrer">
+                  <a
+                    className="font-semibold text-green-dark"
+                    href={site.facebook}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
                     {tx(lang, "Green Bangla Society page", "গ্রীনবাংলা সোসাইটি পেজ")}
                   </a>
                 </li>
-                <li>{tx(lang, "Website:", "ওয়েবসাইট:")} {site.domain}</li>
+                <li>
+                  {tx(lang, "Website:", "ওয়েবসাইট:")} {site.domain}
+                </li>
               </ul>
               <a
-                href={waLink("Hello Green Bangla, I have a question.")}
+                href={site.waLink("Hello Green Bangla, I have a question.")}
                 target="_blank"
                 rel="noreferrer"
                 className="mt-4 inline-flex rounded-lg bg-green-dark px-5 py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-green-deep"
@@ -94,9 +113,15 @@ function Contact() {
             </Card>
           </div>
           <div>
-            <h2 className="text-xl font-extrabold text-green-deep">{tx(lang, "Online application form", "অনলাইন আবেদন ফর্ম")}</h2>
+            <h2 className="text-xl font-extrabold text-green-deep">
+              {tx(lang, "Online application form", "অনলাইন আবেদন ফর্ম")}
+            </h2>
             <p className="mt-2 text-sm text-muted-foreground">
-              {tx(lang, "Fill in your details and send the summary by WhatsApp or email.", "আপনার তথ্য পূরণ করুন এবং হোয়াটসঅ্যাপ বা ইমেলের মাধ্যমে সারাংশ পাঠান।")}
+              {tx(
+                lang,
+                "Fill in your details and send the summary by WhatsApp or email.",
+                "আপনার তথ্য পূরণ করুন এবং হোয়াটসঅ্যাপ বা ইমেলের মাধ্যমে সারাংশ পাঠান।",
+              )}
             </p>
             <div className="mt-5">
               <ApplicationForm />

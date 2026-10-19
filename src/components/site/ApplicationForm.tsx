@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { site, waLink } from "@/lib/site";
+import { useSite } from "@/lib/settings";
 import { tx, useLang } from "@/lib/i18n";
 import { submitApplication } from "@/lib/applications";
 
@@ -23,6 +23,7 @@ function toServiceValue(label?: string) {
 
 export function ApplicationForm({ defaultService }: { defaultService?: string }) {
   const { lang } = useLang();
+  const site = useSite();
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -112,7 +113,12 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
         </label>
         <label className="block text-sm font-semibold text-green-deep">
           {tx(lang, "Amount (BDT)", "পরিমাণ (টাকা)")}
-          <input inputMode="numeric" value={form.amount} onChange={set("amount")} className={field} />
+          <input
+            inputMode="numeric"
+            value={form.amount}
+            onChange={set("amount")}
+            className={field}
+          />
         </label>
         <label className="block text-sm font-semibold text-green-deep sm:col-span-2">
           {tx(lang, "Message", "বার্তা")}
@@ -127,7 +133,7 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
           onClick={() => {
             if (!ready) return;
             // Open WhatsApp first (popup blockers allow it during the click), then the mail app.
-            window.open(waLink(summary), "_blank", "noopener,noreferrer");
+            window.open(site.waLink(summary), "_blank", "noopener,noreferrer");
             window.location.href = mailHref;
             void record();
           }}
@@ -140,7 +146,7 @@ export function ApplicationForm({ defaultService }: { defaultService?: string })
           {tx(lang, "Send to WhatsApp + Email", "হোয়াটসঅ্যাপ এবং ইমেইল এ পাঠান")}
         </button>
         <a
-          href={ready ? waLink(summary) : undefined}
+          href={ready ? site.waLink(summary) : undefined}
           onClick={() => ready && void record()}
           target="_blank"
           rel="noreferrer"

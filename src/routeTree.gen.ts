@@ -25,6 +25,7 @@ import { Route as AuthenticatedManageRouteRouteImport } from './routes/_authenti
 import { Route as AuthenticatedManageIndexRouteImport } from './routes/_authenticated/manage/index'
 import { Route as AuthenticatedManageApplicationsRouteImport } from './routes/_authenticated/manage/applications'
 import { Route as AuthenticatedManageSchemesRouteImport } from './routes/_authenticated/manage/schemes'
+import { Route as AuthenticatedManageSettingsRouteImport } from './routes/_authenticated/manage/settings'
 import { Route as ApiPublicProductImageSplatRouteImport } from './routes/api/public/product-image/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -110,6 +111,12 @@ const AuthenticatedManageSchemesRoute =
     path: '/schemes',
     getParentRoute: () => AuthenticatedManageRouteRoute,
   } as any)
+const AuthenticatedManageSettingsRoute =
+  AuthenticatedManageSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AuthenticatedManageRouteRoute,
+  } as any)
 const ApiPublicProductImageSplatRoute =
   ApiPublicProductImageSplatRouteImport.update({
     id: '/api/public/product-image/$',
@@ -132,6 +139,7 @@ export interface FileRoutesByFullPath {
   '/manage': typeof AuthenticatedManageRouteRouteWithChildren
   '/manage/applications': typeof AuthenticatedManageApplicationsRoute
   '/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/manage/': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -149,6 +157,7 @@ export interface FileRoutesByTo {
   '/transparency': typeof TransparencyRoute
   '/manage/applications': typeof AuthenticatedManageApplicationsRoute
   '/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/manage': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -169,6 +178,7 @@ export interface FileRoutesById {
   '/_authenticated/manage': typeof AuthenticatedManageRouteRouteWithChildren
   '/_authenticated/manage/applications': typeof AuthenticatedManageApplicationsRoute
   '/_authenticated/manage/schemes': typeof AuthenticatedManageSchemesRoute
+  '/_authenticated/manage/settings': typeof AuthenticatedManageSettingsRoute
   '/_authenticated/manage/': typeof AuthenticatedManageIndexRoute
   '/api/public/product-image/$': typeof ApiPublicProductImageSplatRoute
 }
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/manage'
     | '/manage/applications'
     | '/manage/schemes'
+    | '/manage/settings'
     | '/manage/'
     | '/api/public/product-image/$'
   fileRoutesByTo: FileRoutesByTo
@@ -206,6 +217,7 @@ export interface FileRouteTypes {
     | '/transparency'
     | '/manage/applications'
     | '/manage/schemes'
+    | '/manage/settings'
     | '/manage'
     | '/api/public/product-image/$'
   id:
@@ -225,6 +237,7 @@ export interface FileRouteTypes {
     | '/_authenticated/manage'
     | '/_authenticated/manage/applications'
     | '/_authenticated/manage/schemes'
+    | '/_authenticated/manage/settings'
     | '/_authenticated/manage/'
     | '/api/public/product-image/$'
   fileRoutesById: FileRoutesById
@@ -359,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedManageSchemesRouteImport
       parentRoute: typeof AuthenticatedManageRouteRoute
     }
+    '/_authenticated/manage/settings': {
+      id: '/_authenticated/manage/settings'
+      path: '/settings'
+      fullPath: '/manage/settings'
+      preLoaderRoute: typeof AuthenticatedManageSettingsRouteImport
+      parentRoute: typeof AuthenticatedManageRouteRoute
+    }
     '/api/public/product-image/$': {
       id: '/api/public/product-image/$'
       path: '/api/public/product-image/$'
@@ -372,6 +392,7 @@ declare module '@tanstack/react-router' {
 interface AuthenticatedManageRouteRouteChildren {
   AuthenticatedManageApplicationsRoute: typeof AuthenticatedManageApplicationsRoute
   AuthenticatedManageSchemesRoute: typeof AuthenticatedManageSchemesRoute
+  AuthenticatedManageSettingsRoute: typeof AuthenticatedManageSettingsRoute
   AuthenticatedManageIndexRoute: typeof AuthenticatedManageIndexRoute
 }
 
@@ -379,6 +400,7 @@ const AuthenticatedManageRouteRouteChildren: AuthenticatedManageRouteRouteChildr
   {
     AuthenticatedManageApplicationsRoute: AuthenticatedManageApplicationsRoute,
     AuthenticatedManageSchemesRoute: AuthenticatedManageSchemesRoute,
+    AuthenticatedManageSettingsRoute: AuthenticatedManageSettingsRoute,
     AuthenticatedManageIndexRoute: AuthenticatedManageIndexRoute,
   }
 

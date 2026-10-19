@@ -164,7 +164,11 @@ function ApplicationsPage() {
                   "Applications sent from the website form will appear here.",
                   "ওয়েবসাইটের আবেদন ফর্ম থেকে পাঠানো আবেদন এখানে দেখা যাবে।",
                 )
-              : tx(lang, "Try another status or clear the search.", "অন্য স্ট্যাটাস বেছে নিন বা খোঁজা মুছে দিন।")}
+              : tx(
+                  lang,
+                  "Try another status or clear the search.",
+                  "অন্য স্ট্যাটাস বেছে নিন বা খোঁজা মুছে দিন।",
+                )}
           </p>
         </div>
       ) : (
@@ -230,7 +234,9 @@ function ApplicationRow({ app, onChanged }: { app: Application; onChanged: () =>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-bold text-green-deep">{app.name}</h3>
-            <span className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${status.tone}`}>
+            <span
+              className={`rounded-full border px-2 py-0.5 text-[11px] font-bold ${status.tone}`}
+            >
               {tx(lang, status.en, status.bn)}
             </span>
           </div>
@@ -265,19 +271,25 @@ function ApplicationRow({ app, onChanged }: { app: Application; onChanged: () =>
         <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[7rem_1fr]">
           {app.message && (
             <>
-              <dt className="text-xs font-bold text-muted-foreground">{tx(lang, "Message", "বার্তা")}</dt>
+              <dt className="text-xs font-bold text-muted-foreground">
+                {tx(lang, "Message", "বার্তা")}
+              </dt>
               <dd className="whitespace-pre-line text-foreground">{app.message}</dd>
             </>
           )}
           {app.address && (
             <>
-              <dt className="text-xs font-bold text-muted-foreground">{tx(lang, "Address", "ঠিকানা")}</dt>
+              <dt className="text-xs font-bold text-muted-foreground">
+                {tx(lang, "Address", "ঠিকানা")}
+              </dt>
               <dd className="text-foreground">{app.address}</dd>
             </>
           )}
           {app.email && (
             <>
-              <dt className="text-xs font-bold text-muted-foreground">{tx(lang, "Email", "ইমেইল")}</dt>
+              <dt className="text-xs font-bold text-muted-foreground">
+                {tx(lang, "Email", "ইমেইল")}
+              </dt>
               <dd>
                 <a href={`mailto:${app.email}`} className="text-green-dark hover:underline">
                   {app.email}
@@ -310,7 +322,11 @@ function ApplicationRow({ app, onChanged }: { app: Application; onChanged: () =>
             value={note}
             maxLength={2000}
             onChange={(e) => setNote(e.target.value)}
-            placeholder={tx(lang, "e.g. Called on Monday, visiting office", "যেমন: সোমবার কল করা হয়েছে, অফিসে আসবেন")}
+            placeholder={tx(
+              lang,
+              "e.g. Called on Monday, visiting office",
+              "যেমন: সোমবার কল করা হয়েছে, অফিসে আসবেন",
+            )}
             className="mt-1 block w-full rounded-lg border border-border bg-background px-3 py-2 text-sm font-normal text-foreground"
           />
         </label>

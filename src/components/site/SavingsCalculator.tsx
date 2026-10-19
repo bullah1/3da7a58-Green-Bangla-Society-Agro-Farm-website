@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { fmtRate, fmtTaka, fmtYears, schemesOf, schemesQuery } from "@/lib/schemes";
-import { waLink } from "@/lib/site";
+import { useSite } from "@/lib/settings";
 import { tx, useLang } from "@/lib/i18n";
 
 type Mode = "dps" | "fdr";
@@ -11,6 +11,7 @@ const field =
 
 export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode }) {
   const { lang } = useLang();
+  const site = useSite();
   const [mode, setMode] = useState<Mode>(defaultMode);
   const [amount, setAmount] = useState(defaultMode === "dps" ? 2000 : 100000);
   const [pickedId, setPickedId] = useState<string | null>(null);
@@ -167,7 +168,7 @@ export function SavingsCalculator({ defaultMode = "dps" }: { defaultMode?: Mode 
           </div>
         </dl>
         <a
-          href={waLink(
+          href={site.waLink(
             `Hello, I am interested in a ${mode.toUpperCase()} scheme. Amount: ${amount} BDT, Term: ${years} years, Rate: ${rate}%.`,
           )}
           target="_blank"

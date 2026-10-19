@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { bdt, orderLink } from "@/lib/site";
+import { bdt } from "@/lib/site";
+import { useSite } from "@/lib/settings";
 import { imageSrc, productsQuery, type Product } from "@/lib/products";
 import { tx, useLang } from "@/lib/i18n";
 
@@ -8,6 +9,7 @@ export type { Product };
 
 export function ProductGrid() {
   const { lang } = useLang();
+  const site = useSite();
   const { data = [], isLoading, isError } = useQuery(productsQuery);
   const [active, setActive] = useState("All");
   const [availableOnly, setAvailableOnly] = useState(true);
@@ -24,7 +26,7 @@ export function ProductGrid() {
 
   const rawCategories = Array.from(new Set(data.map((p) => p.category)));
   const categories = ["All", ...rawCategories];
-  
+
   const shown = data
     .filter((p) => (active === "All" ? true : p.category === active))
     .filter((p) => (availableOnly ? p.available : true));
@@ -137,7 +139,9 @@ export function ProductGrid() {
                     p.available ? "text-green-dark" : "text-red-dark"
                   }`}
                 >
-                  {p.available ? tx(lang, "In stock", "মজুদ আছে") : tx(lang, "Out of stock", "মজুদ নেই")}
+                  {p.available
+                    ? tx(lang, "In stock", "মজুদ আছে")
+                    : tx(lang, "Out of stock", "মজুদ নেই")}
                 </p>
                 <span className="mt-5 inline-flex items-center justify-center rounded-lg border border-green-dark px-4 py-2.5 text-sm font-bold text-green-dark">
                   {tx(lang, "View details", "বিস্তারিত দেখুন")}
@@ -217,14 +221,18 @@ export function ProductGrid() {
                     }`}
                   >
                     {selected.available
-                      ? tx(lang, "In stock — ready to deliver", "মজুদ আছে — ডেলিভারির জন্য প্রস্তুত")
+                      ? tx(
+                          lang,
+                          "In stock — ready to deliver",
+                          "মজুদ আছে — ডেলিভারির জন্য প্রস্তুত",
+                        )
                       : tx(lang, "Out of stock right now", "এই মুহূর্তে মজুদ নেই")}
                   </dd>
                 </div>
               </dl>
 
               <a
-                href={orderLink(selected.name)}
+                href={site.orderLink(selected.name)}
                 target="_blank"
                 rel="noreferrer"
                 className={`mt-6 inline-flex w-full items-center justify-center rounded-lg px-4 py-3 text-sm font-bold transition-colors ${

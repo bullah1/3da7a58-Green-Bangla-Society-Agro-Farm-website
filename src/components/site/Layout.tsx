@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Menu, MessageCircle, PhoneCall, X } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
-import { site, waLink } from "@/lib/site";
+import { useSite } from "@/lib/settings";
 import { tx, useLang, type Lang } from "@/lib/i18n";
 
 const nav = [
@@ -68,6 +68,7 @@ export function LangToggle({ className = "" }: { className?: string }) {
 export function Header() {
   const [open, setOpen] = useState(false);
   const { lang } = useLang();
+  const site = useSite();
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-card shadow-card">
@@ -75,10 +76,7 @@ export function Header() {
         <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-4 py-3 lg:px-6 lg:py-4">
           <Logo />
           <div className="flex shrink-0 items-center gap-2 lg:gap-4">
-            <a
-              href={`tel:${site.phone.replace(/[^+\d]/g, "")}`}
-              className="group hidden items-center gap-3 lg:flex"
-            >
+            <a href={site.tel(site.phone)} className="group hidden items-center gap-3 lg:flex">
               <span className="flex size-9 items-center justify-center rounded-full bg-secondary text-green-deep transition-colors group-hover:bg-green-dark group-hover:text-white">
                 <PhoneCall className="size-4" aria-hidden="true" />
               </span>
@@ -91,8 +89,16 @@ export function Header() {
               <span className="mx-1 h-8 w-px bg-border" aria-hidden="true" />
             </a>
             <LangToggle />
-            <Button asChild size="sm" className="hidden h-9 bg-green-dark font-bold hover:bg-green-deep sm:inline-flex">
-              <a href={waLink("Hello Green Bangla, I would like to know more.")} target="_blank" rel="noreferrer">
+            <Button
+              asChild
+              size="sm"
+              className="hidden h-9 bg-green-dark font-bold hover:bg-green-deep sm:inline-flex"
+            >
+              <a
+                href={site.waLink("Hello Green Bangla, I would like to know more.")}
+                target="_blank"
+                rel="noreferrer"
+              >
                 <MessageCircle className="size-4" aria-hidden="true" />
                 WhatsApp
               </a>
@@ -102,7 +108,11 @@ export function Header() {
               variant="outline"
               size="icon"
               onClick={() => setOpen((v) => !v)}
-              aria-label={open ? tx(lang, "Close menu", "মেনু বন্ধ করুন") : tx(lang, "Open menu", "মেনু খুলুন")}
+              aria-label={
+                open
+                  ? tx(lang, "Close menu", "মেনু বন্ধ করুন")
+                  : tx(lang, "Open menu", "মেনু খুলুন")
+              }
               aria-expanded={open}
               className="border-border bg-card text-green-deep xl:hidden"
             >
@@ -114,7 +124,10 @@ export function Header() {
 
       <div className="hidden bg-green-deep xl:block">
         <div className="mx-auto grid max-w-7xl grid-cols-[minmax(0,1fr)_auto] items-stretch gap-3 px-6">
-          <nav aria-label={tx(lang, "Primary navigation", "প্রধান নেভিগেশন")} className="flex min-w-0 items-stretch">
+          <nav
+            aria-label={tx(lang, "Primary navigation", "প্রধান নেভিগেশন")}
+            className="flex min-w-0 items-stretch"
+          >
             {nav.map((item) => (
               <Link
                 key={item.to}
@@ -142,7 +155,10 @@ export function Header() {
 
       {open && (
         <div className="border-t border-border bg-card px-4 py-4 shadow-lift xl:hidden">
-          <nav aria-label={tx(lang, "Mobile navigation", "মোবাইল নেভিগেশন")} className="mx-auto grid max-w-7xl grid-cols-2 gap-1 sm:grid-cols-3">
+          <nav
+            aria-label={tx(lang, "Mobile navigation", "মোবাইল নেভিগেশন")}
+            className="mx-auto grid max-w-7xl grid-cols-2 gap-1 sm:grid-cols-3"
+          >
             {nav.map((item) => (
               <Link
                 key={item.to}
@@ -165,7 +181,7 @@ export function Header() {
               <ArrowRight className="size-4" aria-hidden="true" />
             </Link>
             <a
-              href={waLink("Hello Green Bangla, I would like to know more.")}
+              href={site.waLink("Hello Green Bangla, I would like to know more.")}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-md bg-green-dark px-4 py-3 text-sm font-bold text-white hover:bg-green-deep"
@@ -174,7 +190,7 @@ export function Header() {
               WhatsApp
             </a>
             <a
-              href={`tel:${site.phone.replace(/[^+\d]/g, "")}`}
+              href={site.tel(site.phone)}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-border px-4 py-3 text-sm font-bold text-green-deep hover:bg-secondary"
             >
               <PhoneCall className="size-4" aria-hidden="true" />
@@ -189,6 +205,7 @@ export function Header() {
 
 export function Footer() {
   const { lang } = useLang();
+  const site = useSite();
   return (
     <footer className="bg-green-deep text-white/75">
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -260,17 +277,24 @@ export function Footer() {
           </ul>
         </div>
         <div>
-          <h3 className="text-sm font-bold text-white">
-            {tx(lang, "Contact", "যোগাযোগ")}
-          </h3>
+          <h3 className="text-sm font-bold text-white">{tx(lang, "Contact", "যোগাযোগ")}</h3>
           <ul className="mt-3 space-y-2 text-sm text-white/75">
             <li>{site.address}</li>
-            <li>{site.phone}, {site.phone2}</li>
-            <li>WhatsApp: {site.whatsappDisplay}</li>
+            <li>
+              {site.phone}, {site.phone2}
+            </li>
+            <li>WhatsApp: {site.whatsapp}</li>
             <li>{site.email}</li>
             <li>{site.email2}</li>
             <li>
-              <a href={site.facebook} target="_blank" rel="noreferrer" className="hover:text-white hover:underline">Facebook</a>
+              <a
+                href={site.facebook}
+                target="_blank"
+                rel="noreferrer"
+                className="hover:text-white hover:underline"
+              >
+                Facebook
+              </a>
             </li>
             <li>{site.domain}</li>
           </ul>
@@ -335,7 +359,10 @@ export function Section({
   id?: string;
 }) {
   return (
-    <section id={id} className={tone === "surface" ? "bg-surface py-14 sm:py-20" : "py-14 sm:py-20"}>
+    <section
+      id={id}
+      className={tone === "surface" ? "bg-surface py-14 sm:py-20" : "py-14 sm:py-20"}
+    >
       <div className="mx-auto max-w-6xl px-4">
         {title && (
           <h2 className="max-w-3xl text-2xl font-bold text-green-deep sm:text-4xl">{title}</h2>
@@ -351,11 +378,7 @@ export function Section({
 
 export function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div
-      className={`rounded-2xl border border-border bg-card p-6 ${className}`}
-    >
-      {children}
-    </div>
+    <div className={`rounded-2xl border border-border bg-card p-6 ${className}`}>{children}</div>
   );
 }
 

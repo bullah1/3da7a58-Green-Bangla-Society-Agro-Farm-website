@@ -11,6 +11,7 @@ import { type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { LangProvider } from "../lib/i18n";
+import { loadSettingsSafely } from "../lib/settings";
 
 function NotFoundComponent() {
   return (
@@ -70,6 +71,9 @@ function ErrorComponent({ error, reset }: { error: unknown; reset: () => void })
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  // Site settings (contact info, banner) are loaded with the page so there is no flicker.
+  loader: async () => ({ settings: await loadSettingsSafely() }),
+  staleTime: 60_000,
   head: () => ({
     meta: [
       { charSet: "utf-8" },
