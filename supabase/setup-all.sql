@@ -4,6 +4,9 @@
 -- existing data alone. Supabase → SQL Editor → paste all → Run.
 -- ════════════════════════════════════════════════════════════════════
 
+-- Make sure this session can create tables (avoids "read-only transaction" errors).
+SET SESSION CHARACTERISTICS AS TRANSACTION READ WRITE;
+
 -- ───────── 1. Roles and admin check ─────────
 DO $$ BEGIN
   CREATE TYPE public.app_role AS ENUM ('admin', 'user');
